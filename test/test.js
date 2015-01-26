@@ -48,7 +48,7 @@ describe('set/get/cast', function() {
     expect(post.get('nested2.me')).to.be.equal('test');
     expect(post.get('nested2.hello')).to.be.equal('world');
   });
-  
+
   it('should support nested "type" property', function() {
     var post = new Post({id: "blah", nested: {type: "test", hello: "world"}});
     expect(post.get('nested.type')).to.be.equal('test');
@@ -285,7 +285,7 @@ describe('defaults', function() {
     expect(post.aField).to.be.equal('mmm');
     expect(post.nested.type).to.be.equal('ahahah');
   });
-  
+
   it('should not set default value if it is specified in constructor', function() {
     expect(post.title).to.be.equal('blah');
     expect(post.anotherField).to.be.equal('wha');
@@ -301,13 +301,13 @@ describe('Date field', function() {
       date: Date
     });
   });
-  
+
   it('should set date from string', function() {
     var post = new Post({date: "1372354005"});
     expect(post.date).to.be.instanceof(Date);
     expect(post.date.toString()).to.be.equal(new Date(1372354005).toString());
   });
-  
+
   it('should set date from number', function() {
     var post = new Post({date: 1372354005});
     expect(post.date).to.be.instanceof(Date);
@@ -324,13 +324,13 @@ describe('Number field', function() {
       nr: Number
     });
   });
-  
+
   it('should set number from string', function() {
     var post = new Post({nr: "7"});
     expect(typeof post.nr === 'number').to.be.true;
     expect(post.nr).to.be.equal(7);
   });
-  
+
   it('should set number from number', function() {
     var post = new Post({nr: 7});
     expect(typeof post.nr === 'number').to.be.true;
@@ -378,7 +378,10 @@ describe('Boolean field', function() {
 
   it('should validate if a bool', function(done) {
     var post = new Post({b: true});
-    post.validate(done);
+    post.validate(function(err) {
+      expect(err).to.be.null;
+      done();
+    });
   });
 });
 
@@ -390,17 +393,16 @@ describe('Validators', function() {
         required: true
       }
     });
-    
+
     var model = new TestModel({});
     expect(model.id).to.not.exist;
     model.validate(function(e) {
-      expect(e).to.be.instanceof(minimodel.Errors.ModelValidationError);
-      expect(e).to.have.deep.property("errors.id.errors.0.type", "required");
+      expect(e['id']).to.have.deep.property("0.type", "required");
       done();
     });
   });
-  
-  
+
+
   it('should throw error if empty string and required is set (with promise)', function(done) {
     var TestModel = minimodel.Model.extend({
       id: {
@@ -408,47 +410,47 @@ describe('Validators', function() {
         required: true
       }
     });
-    
+
     var model = new TestModel({id: ""});
     model.validate().then(function() {
       done(new Error("Validated"));
     }, function(e) {
-      expect(e).to.have.deep.property("errors.id.errors.0.type", "required");
+      expect(e['id'][0]).to.have.property("type", "required");
       done();
-    }).otherwise(done);
+    }).done();
   });
-  
-  
+
+
   it('should not validate if date is not valid date', function(done) {
     var TestModel = minimodel.Model.extend({
       id: {
         type: Date
       }
     });
-    
+
     var model = new TestModel({id: "asdqweasd"});
     model.validate(function(e) {
-      expect(e).to.have.deep.property("errors.id.errors.0.type", "wrong_type");
+      expect(e['id']).to.have.deep.property("0.type", "wrong_type");
       done();
     });
   });
-  
-  
+
+
   it('should throw error if number is NaN', function(done) {
     var TestModel = minimodel.Model.extend({
       id: {
         type: Number
       }
     });
-    
+
     var model = new TestModel({id: "asdqweasd"});
     model.validate(function(e) {
-      expect(e).to.have.deep.property("errors.id.errors.0.type", "wrong_type");
+      expect(e).to.have.deep.property("id.0.type", "wrong_type");
       done();
     });
   });
-  
-  
+
+
   it('should throw error if custom validation fail', function(done) {
     var TestModel = minimodel.Model.extend({
       id: {
@@ -461,10 +463,10 @@ describe('Validators', function() {
         }
       }
     });
-    
+
     var model = new TestModel({id: "a"});
     model.validate().catch(function(e) {
-      expect(e).to.have.deep.property("errors.id");
+      expect(e).to.have.deep.property("id");
       done();
     }).catch(done);
   });
@@ -480,7 +482,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: ""});
     model.validate().catch(function(e) {
-      expect(e.message).to.contain("The field is required");
+      expect(e.id[0].message).to.contain("The field is required");
       done();
     }).catch(done);
   });
@@ -502,7 +504,7 @@ describe('Exporters', function() {
     expect(post.toObject()).to.have.deep.property('nested.obj', "a");
     expect(post.toDb()).to.have.property('nr', 7);
   });
-  
+
   it('should not export virtuals by default', function() {
     var Post = minimodel.Model.extend({
       nr: Number,
@@ -518,7 +520,7 @@ describe('Exporters', function() {
     expect(post.toObject()).to.not.have.property('v');
     expect(post.toDb()).to.not.have.property('v');
   });
-  
+
   it('exported objects should not modify Model', function() {
     var Post = minimodel.Model.extend({
       nr: Number,
@@ -544,19 +546,19 @@ describe('ModelsArray', function() {
       }
     });
   });
-  
-  
+
+
   it('should export all models in the array', function() {
     var post1 = new Post({nr: "7", nested: {obj: "a"}});
     var post2 = new Post({nr: "8", nested: {obj: "b"}});
-    var arr = new minimodel.ModelsArray();
+    var arr = new minimodel.Collection();
     arr.push(post1, post2);
-    
+
     expect(arr.toJson()).to.have.length(2);
     expect(arr.toJson()).to.have.deep.property('0.nr', 7);
     expect(arr.toJson()).to.have.deep.property('0.nested.obj', "a");
     expect(arr.toJson()).to.have.deep.property('1.nr', 8);
-    
+
     expect(arr.toObject()).to.have.deep.property('0.nr', 7);
     expect(arr.toDb()).to.have.deep.property('1.nested.obj', "b");
   });
@@ -633,11 +635,15 @@ describe('Array Field', function() {
               astring: String,
               anum: {
                 type: Number,
-                includeInJson: false
+                views: {
+                  json: false
+                }
               }
             }
           ],
-          includeInDb: false
+          views: {
+            db: false
+          }
         }
       });
 
@@ -689,18 +695,18 @@ describe('Array Field', function() {
     });
   });
 
-  describe('validation', function(done) {
-    it('should validate simple elements', function() {
+  describe('validation', function() {
+    it('should validate simple elements', function(done) {
       var Post = minimodel.Model.extend({
         arr: [Number]
       });
-      
+
       var post = new Post({arr: ["1", "asd"]});
       post.validate().catch(function(e) {
-        expect(e).to.not.have.deep.property("errors.arr.errors.0");
-        expect(e).to.have.deep.property("errors.arr.errors.1");
+        expect(e).to.not.have.property("arr.0");
+        expect(e).to.have.property("arr.1");
         done();
-      }).catch(done);
+      }).done();
     });
   });
 });
@@ -712,7 +718,7 @@ describe('Dynamic property definition', function() {
       nr: Number
     });
     Model.property('aprop', String);
-    
+
     var model = new Model({nr: "7", aprop: "tessst"});
     expect(model.nr).to.be.equal(7);
     expect(model.aprop).to.be.equal("tessst");
@@ -765,5 +771,57 @@ describe('Dynamic property definition', function() {
     var model = new Model({p: {p1: "7", p2: "3"}});
     expect(model.p.p1).to.be.equal(8);
     expect(model.p.p2).to.be.equal("3");
+  });
+});
+
+
+describe('Inheritance', function() {
+  it('should inherit properties from parent', function () {
+    var Model = minimodel.Model.extend({
+      nr: Number
+    });
+    var Child = Model.extend({
+      aprop: String
+    });
+
+    var model = new Child({nr: "7", aprop: "tessst"});
+    expect(model).to.be.instanceof(Model);
+    expect(model.nr).to.be.equal(7);
+    expect(model.aprop).to.be.equal("tessst");
+  });
+
+  it('should inherit static properties from parent', function () {
+    var Model = minimodel.Model.extend({
+      nr: Number
+    });
+    Model.load = function() {
+      return new this({nr: 7, aprop: "tessst"});
+    };
+    var Child = Model.extend({
+      aprop: String
+    });
+
+    var model = Child.load();
+    expect(model).to.be.instanceof(Child);
+    expect(model.nr).to.be.equal(7);
+    expect(model.aprop).to.be.equal("tessst");
+  });
+});
+
+describe('Constant field', function() {
+  var Post;
+
+  beforeEach(function () {
+    Post = minimodel.Model.extend({
+      b: {
+        type: 'constant',
+        value: 'booom'
+      }
+    });
+  });
+
+  it('should not be able to change a constant property', function () {
+    var post = new Post({b: 'test'});
+    expect(post.b).to.be.equal('booom');
   });
 });

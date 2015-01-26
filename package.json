@@ -12,18 +12,20 @@
     "url": "git://github.com/mariocasciaro/minimodel.git"
   },
   "dependencies": {
+    "bluebird": "^2.9.1",
     "inherits": "~2.0.1",
-    "object-path": "~0.1.2",
-    "extend": "~1.2.1",
-    "when": "~3.0.1",
-    "async": "~0.4.0"
+    "lodash.assign": "^3.0.0",
+    "lodash.defaults": "^3.0.0",
+    "lodash.foreach": "^3.0.0",
+    "lodash.merge": "^3.0.0",
+    "object-path": "~0.8.1"
   },
   "devDependencies": {
-    "mocha": "~1.13.0",
-    "chai": "~1.8.0",
-    "mocha-lcov-reporter": "~0.0.1",
-    "coveralls": "~2.3.0",
-    "istanbul": "~0.1.44"
+    "chai": "^1.10.0",
+    "coveralls": "^2.11.2",
+    "istanbul": "^0.3.5",
+    "mocha": "^2.1.0",
+    "mocha-lcov-reporter": "~0.0.1"
   },
   "scripts": {
     "test": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha test/*.js --report html -- -R spec"
@@ -31,14 +33,16 @@
   "testling": {
     "browsers": {
       "ie": [
-        8,
-        9
+        9,
+        10,
+        11
       ],
       "firefox": [
         10,
         24
       ],
       "chrome": [
+        34,
         30,
         22
       ],
