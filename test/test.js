@@ -397,7 +397,7 @@ describe('Validators', function() {
     var model = new TestModel({});
     expect(model.id).to.not.exist;
     model.validate(function(e) {
-      expect(e['id']).to.have.deep.property("0.type", "required");
+      expect(e.errors['id']).to.have.deep.property("0.type", "required");
       done();
     });
   });
@@ -415,7 +415,7 @@ describe('Validators', function() {
     model.validate().then(function() {
       done(new Error("Validated"));
     }, function(e) {
-      expect(e['id'][0]).to.have.property("type", "required");
+      expect(e.errors['id'][0]).to.have.property("type", "required");
       done();
     }).done();
   });
@@ -430,7 +430,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: "asdqweasd"});
     model.validate(function(e) {
-      expect(e['id']).to.have.deep.property("0.type", "wrong_type");
+      expect(e.errors['id']).to.have.deep.property("0.type", "wrong_type");
       done();
     });
   });
@@ -445,7 +445,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: "asdqweasd"});
     model.validate(function(e) {
-      expect(e).to.have.deep.property("id.0.type", "wrong_type");
+      expect(e).to.have.deep.property("errors.id.0.type", "wrong_type");
       done();
     });
   });
@@ -466,7 +466,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: "a"});
     model.validate().catch(function(e) {
-      expect(e).to.have.deep.property("id");
+      expect(e).to.have.deep.property("errors.id");
       done();
     }).catch(done);
   });
@@ -482,7 +482,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: ""});
     model.validate().catch(function(e) {
-      expect(e.id[0].message).to.contain("The field is required");
+      expect(e.errors.id[0].message).to.contain("The field is required");
       done();
     }).catch(done);
   });
@@ -703,8 +703,8 @@ describe('Array Field', function() {
 
       var post = new Post({arr: ["1", "asd"]});
       post.validate().catch(function(e) {
-        expect(e).to.not.have.property("arr.0");
-        expect(e).to.have.property("arr.1");
+        expect(e.errors).to.not.have.property("arr.0");
+        expect(e.errors).to.have.property("arr.1");
         done();
       }).done();
     });
