@@ -1,7 +1,24 @@
+var expect = require('chai').expect
+var minimodel = require('../lib')
+var utils = require('../lib/utils')
 
-var expect = require('chai').expect,
-  minimodel = require('../lib');
 
+describe('utils', function() {
+  it('defaults should work with 2 args', function() {
+    expect(utils.defaults({a: undefined, b: 'ok'}, {a: 1}))
+      .to.be.deep.equal({a: 1, b: 'ok'})
+  })
+
+  it('defaults should work with 3 args', function() {
+    expect(utils.defaults({a: undefined, b: 'ok'}, {a: 1}, {a: 2, c: 1}))
+      .to.be.deep.equal({a: 1, b: 'ok', c: 1})
+  })
+  
+  it('defaults should not set undefined values', function() {
+    expect(utils.defaults({a: undefined, b: 'ok'}, {a: 1}, {a: undefined}))
+      .to.be.deep.equal({a: 1, b: 'ok'})
+  })
+})
 
 describe('set/get/cast', function() {
   var Post;
@@ -215,14 +232,14 @@ describe('Virtuals', function() {
       full: {
         type: minimodel.Types.Virtual,
         get: function() {
-          return this.model.get('name') + " " + this.model.get('surname');
+          return this.parent.get('name') + " " + this.parent.get('surname');
         }
       },
       nested: {
         prop: {
           type: minimodel.Types.Virtual,
           get: function() {
-            return this.model.get('name') + " " + this.model.get('surname');
+            return this.getParent().getParent().get('name') + " " + this.getParent().getParent().get('surname');
           }
         }
       },
@@ -231,8 +248,8 @@ describe('Virtuals', function() {
     });
 
     var model = new TestModel({name: "John", surname: "Doe"});
-    expect(model.get('full')).to.be.equal('John Doe');
-    expect(model.get('nested.prop')).to.be.equal('John Doe');
+    expect(model.get('full'), '1 level').to.be.equal('John Doe');
+    expect(model.get('nested.prop'), 'Nested').to.be.equal('John Doe');
   });
 
 
@@ -397,7 +414,7 @@ describe('Validators', function() {
     var model = new TestModel({});
     expect(model.id).to.not.exist;
     model.validate(function(e) {
-      expect(e.errors['id']).to.have.deep.property("0.type", "required");
+      expect(e).to.have.deep.property("errors.id.type", "required");
       done();
     });
   });
@@ -415,7 +432,7 @@ describe('Validators', function() {
     model.validate().then(function() {
       done(new Error("Validated"));
     }, function(e) {
-      expect(e.errors['id'][0]).to.have.property("type", "required");
+      expect(e).to.have.deep.property("errors.id.type", "required");
       done();
     }).done();
   });
@@ -430,7 +447,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: "asdqweasd"});
     model.validate(function(e) {
-      expect(e.errors['id']).to.have.deep.property("0.type", "wrong_type");
+      expect(e).to.have.deep.property("errors.id.type", "wrong_type");
       done();
     });
   });
@@ -445,7 +462,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: "asdqweasd"});
     model.validate(function(e) {
-      expect(e).to.have.deep.property("errors.id.0.type", "wrong_type");
+      expect(e).to.have.deep.property("errors.id.type", "wrong_type");
       done();
     });
   });
@@ -482,7 +499,7 @@ describe('Validators', function() {
 
     var model = new TestModel({id: ""});
     model.validate().catch(function(e) {
-      expect(e.errors.id[0].message).to.contain("The field is required");
+      expect(e.errors.id.message).to.contain("The field is required");
       done();
     }).catch(done);
   });
