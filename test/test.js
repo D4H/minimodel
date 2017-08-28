@@ -842,3 +842,67 @@ describe('Constant field', function() {
     expect(post.b).to.be.equal('booom');
   });
 });
+
+
+describe('exportDeep', function() {
+  var Post;
+
+  beforeEach(function () {
+    Post = minimodel.Model.extend({
+      b: {
+        type: 'constant',
+        value: 'booom'
+      },
+      c: {
+        type: minimodel.Types.Virtual,
+        get: function() {
+          return 'this is virtual'
+        },
+        views: {
+          object: true
+        }
+      }
+    });
+  })
+
+  it('should export a model nested in a plain object', function () {
+    var post = new Post({b: 'test'});
+    var obj = {
+      a: 'ok',
+      post: post
+    }
+    
+    expect(minimodel.exportDeep(obj)).to.be.deep.equal({
+      a: 'ok',
+      post: {
+        b: 'booom',
+        c: 'this is virtual'
+      }
+    })
+  });
+
+
+  it('should treat special "length" character properly', function () {
+    var post = new Post({b: 'test'});
+    var obj = {
+      a: 'ok',
+      o: {
+        length: 1,
+        nested: 'yes'
+      },
+      post: post
+    }
+
+    expect(minimodel.exportDeep(obj)).to.be.deep.equal({
+      a: 'ok',
+      o: {
+        length: 1,
+        nested: 'yes'
+      },
+      post: {
+        b: 'booom',
+        c: 'this is virtual'
+      }
+    })
+  });
+});
