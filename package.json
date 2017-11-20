@@ -12,7 +12,6 @@
     "url": "git://github.com/mariocasciaro/minimodel.git"
   },
   "dependencies": {
-    "bluebird": "^2.9.1",
     "inherits": "~2.0.1",
     "lodash": "^4.17.0",
     "object-path": "~0.8.1"
