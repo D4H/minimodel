@@ -26,7 +26,8 @@
     "mocha-lcov-reporter": "~0.0.1"
   },
   "scripts": {
-    "test": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha test/*.js --report html -- -R spec"
+    "test": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha test/*.js --report html -- -R spec",
+    "benchmark": "node benchmark/benchmark.js"
   },
   "testling": {
     "browsers": {

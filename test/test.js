@@ -13,7 +13,7 @@ describe('utils', function() {
     expect(utils.defaults({a: undefined, b: 'ok'}, {a: 1}, {a: 2, c: 1}))
       .to.be.deep.equal({a: 1, b: 'ok', c: 1})
   })
-  
+
   it('defaults should not set undefined values', function() {
     expect(utils.defaults({a: undefined, b: 'ok'}, {a: 1}, {a: undefined}))
       .to.be.deep.equal({a: 1, b: 'ok'})
@@ -434,7 +434,7 @@ describe('Validators', function() {
     }, function(e) {
       expect(e).to.have.deep.property("errors.id.type", "required");
       done();
-    }).done();
+    })
   });
 
 
@@ -723,7 +723,7 @@ describe('Array Field', function() {
         expect(e.errors).to.not.have.property("arr.0");
         expect(e.errors).to.have.property("arr.1");
         done();
-      }).done();
+      })
     });
   });
 });
@@ -871,7 +871,7 @@ describe('exportDeep', function() {
       a: 'ok',
       post: post
     }
-    
+
     expect(minimodel.exportDeep(obj)).to.be.deep.equal({
       a: 'ok',
       post: {
